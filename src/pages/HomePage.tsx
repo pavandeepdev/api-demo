@@ -1,17 +1,10 @@
 import { Link } from 'react-router-dom';
 
-/**
- * HomePage Component
- * 
- * Landing page with navigation to all demo pages.
- * Provides overview of concepts covered.
- */
 export function HomePage() {
     return (
         <div className="home-page">
             <header className="hero">
                 <h1>🚀 API Management in React</h1>
-                <p className="subtitle">Interactive Teaching Demos</p>
                 <p className="description">
                     Learn about interceptors, custom hooks, and TanStack Query through hands-on examples
                 </p>
@@ -45,10 +38,11 @@ export function HomePage() {
                     <h3>Custom Hooks Demo</h3>
                     <p>Interactive CRUD operations with custom hooks</p>
                     <ul className="card-features">
-                        <li>useGet - Fetch data</li>
-                        <li>usePost - Create items</li>
-                        <li>usePut - Update items</li>
-                        <li>useDelete - Remove items</li>
+                        <li>useFetchData - Fetch data</li>
+                        <li>usePostData - Create items</li>
+                        <li>usePutData - Update items</li>
+                        <li>usePatchData - Partial update</li>
+                        <li>useDeleteData - Remove items</li>
                     </ul>
                 </Link>
 

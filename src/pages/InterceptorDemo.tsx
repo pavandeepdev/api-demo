@@ -45,39 +45,48 @@ export function InterceptorDemo() {
     };
 
     const interceptorCode = `// REQUEST INTERCEPTOR
-axiosDemo.interceptors.request.use(
-  (config) => {
-    // 1. Add custom headers
-    config.headers['X-Custom-Header'] = 'Demo-App';
-    
-    // 2. Add auth token
-    const token = localStorage.getItem('demo_token');
-    if (token) {
-      config.headers.Authorization = \`Bearer \${token}\`;
+axiosInstance.interceptors.request.use(
+  async (config: InternalAxiosRequestConfig) => {
+    if (typeof window !== "undefined") {
+      const accessToken = await getClientToken();
+      if (accessToken) {
+        config.headers.Authorization = 'Bearer ' + accessToken;
+      }
     }
-    
-    // 3. Log request
-    console.log('📤 Request:', config);
-    
+    if (config.data instanceof FormData) {
+      config.headers["Content-Type"] = "multipart/form-data";
+    } else if (config.data) {
+      config.headers["Content-Type"] = "application/json;charset=utf-8";
+    }
     return config;
-  }
+  },
+  (error: AxiosError) => Promise.reject(error)
 );
 
 // RESPONSE INTERCEPTOR
-axiosDemo.interceptors.response.use(
-  (response) => {
-    // Log successful response
-    console.log('📥 Response:', response);
-    return response;
+axiosInstance.interceptors.response.use(
+  <T>(res: AxiosResponse<ApiResponse<T>>) => {
+    if (!res.data) throw new Error("Error in response");
+    const { statusCode, error } = res.data;
+    const hasSuccess =
+      (statusCode === 200 || statusCode === 201) && error === false;
+    if (hasSuccess) {
+      return res;
+    }
+    throw new Error(res.data.message || "Unknown API error");
   },
-  (error) => {
-    // Handle errors globally
-    if (error.response?.status === 401) {
-      // Redirect to login
+  async (error: AxiosError) => {
+    const status = error.response?.status;
+    if (status === 401) {
+      if (typeof window !== "undefined") {
+        await signOut();
+        window.localStorage.clear();
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }
-);`;
+);;`;
 
     return (
         <div className="demo-page">
@@ -200,7 +209,7 @@ axiosDemo.interceptors.response.use(
                 <section className="tips">
                     <h2>💡 Pro Tips</h2>
                     <div className="tip-card">
-                        <strong>🔐 Authentication:</strong> Store tokens in localStorage and add them in request interceptor
+                        <strong>🔐 Authentication:</strong> Store tokens in session / cookie and add them in request interceptor
                     </div>
                     <div className="tip-card">
                         <strong>🔄 Token Refresh:</strong> Catch 401 errors in response interceptor and refresh token automatically
