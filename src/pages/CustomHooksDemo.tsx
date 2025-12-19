@@ -110,7 +110,8 @@ export function CustomHooksDemo() {
         }
     };
 
-    const handleDelete = (id: number) => {
+    // @ts-ignore
+    const handleDelete = (id: string) => {
         if (window.confirm('Are you sure you want to delete this post?')) {
             deletePost.mutate();
         }
@@ -273,7 +274,7 @@ deletePost.mutate(); // Delete post`;
                                             ✏️ Edit
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(post.id)}
+                                            onClick={() => handleDelete(post.id.toString())}
                                             disabled={deletePost.isPending}
                                             className="action-button delete"
                                         >

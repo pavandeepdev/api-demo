@@ -30,3 +30,31 @@ export function buildQueryString(params: Record<string, any>): string {
   // Prepend '?' if the query string is not empty
   return queryString ? '?' + queryString : '';
 }
+
+export function objectToFormData(
+  obj: Record<string, any>,
+  form?: FormData,
+  namespace?: string
+): FormData {
+  const formData = form || new FormData();
+
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const value = obj[key];
+      const formKey = namespace ? namespace + '[' + key + ']' : key;
+
+      if (value instanceof File || value instanceof Blob) {
+        // Handle File or Blob
+        formData.append(formKey, value);
+      } else if (typeof value === 'object' && value !== null) {
+        // Recursively process nested objects
+        objectToFormData(value, formData, formKey);
+      } else if (value !== undefined && value !== null) {
+        // Append primitive values (string, number, boolean)
+        formData.append(formKey, String(value));
+      }
+    }
+  }
+
+  return formData;
+}

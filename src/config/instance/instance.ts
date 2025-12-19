@@ -63,7 +63,7 @@ axiosInstance.interceptors.response.use(
     if (!res.data) throw new Error('Error in response');
 
     // 2. Check for success status codes
-    const { status: statusCode, error } = res;
+    const { status: statusCode } = res;
     const hasSuccess = (statusCode === 200 || statusCode === 201)
 
     // 3. Log successful response

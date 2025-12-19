@@ -44,6 +44,7 @@ const usePatchData = <TData = unknown, TVariables = unknown>({
 
       throw error;
     },
+    // @ts-ignore
     onSuccess: (data: TData) => {
       refetchQueries.forEach((query) =>
         queryClient.invalidateQueries({ queryKey: [query] })
