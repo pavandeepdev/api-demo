@@ -1,20 +1,16 @@
-import API from "@/config/api";
-import { instance } from "@/config/instance";
-
-import { EnhancedError } from "@/interface";
-import { extractErrorInfo } from "@/lib/error-response";
+import instance from '../config/instance/instance';
 import {
-  UseMutationOptions,
+  type UseMutationOptions,
   useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { toast } from "sonner";
+  useQueryClient
+} from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 interface DeleteDataOptions<TData> {
   url: string;
   refetchQueries?: string[];
   onSuccess?: () => void;
-  onError?: (error: EnhancedError) => void;
+  onError?: (error: Error) => void;
   mutationOptions?: UseMutationOptions<TData, Error, void>;
 }
 
@@ -29,14 +25,14 @@ const useDeleteData = <TData = unknown>({
 
   return useMutation<TData, Error, void>({
     mutationFn: async (): Promise<TData> => {
-      const response = await instance.delete(url);
+      const response = await instance.delete({ url });
 
       if (response?.statusCode === 200) {
-        toast.success(response.message ?? "Data deleted successfully");
+        toast.success(response.message ?? 'Data deleted successfully');
         return response.data as TData;
       }
 
-      const errorMessage = response?.message || "Failed to delete data";
+      const errorMessage = response?.message || 'Failed to delete data';
 
       throw new Error(errorMessage);
     },
@@ -44,14 +40,12 @@ const useDeleteData = <TData = unknown>({
       if (refetchQueries) {
         queryClient.refetchQueries({ queryKey: refetchQueries, exact: false });
       }
-      queryClient.refetchQueries({ queryKey: [API.notification.list], exact: false });
       if (onSuccess) {
         onSuccess();
       }
     },
-    onError: (error: EnhancedError) => {
-      const errorInfo = extractErrorInfo(error);
-      toast.error(errorInfo.description);
+    onError: (error: Error) => {
+      toast.error(error.message);
 
       if (onError) {
         onError(error);

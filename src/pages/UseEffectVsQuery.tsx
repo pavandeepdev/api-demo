@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ComparisonPanel } from '@/components/ComparisonPanel';
 import { CodeBlock } from '@/components/CodeBlock';
-import { useGet } from '@/hooks/demo/useGet';
+import useFetchData from '@/hooks/use-fetch-data';
 import API from '@/config/api/api';
+import type { User } from '@/types';
 
 /**
  * UseEffectVsQuery Page
@@ -11,14 +12,6 @@ import API from '@/config/api/api';
  * Side-by-side comparison showing the difference between
  * traditional useEffect approach and TanStack Query approach.
  */
-
-// Types
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    username: string;
-}
 
 // ============================================
 // LEFT PANEL: useEffect Approach
@@ -38,7 +31,7 @@ function UseEffectApproach() {
             setApiCallCount(prev => prev + 1);
 
             try {
-                const response = await fetch('https://jsonplaceholder.typicode.com/users');
+                const response = await fetch(API.demo.users);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -95,13 +88,12 @@ function UseEffectApproach() {
 // RIGHT PANEL: TanStack Query Approach
 // ============================================
 function TanStackQueryApproach() {
-    const { data: users, isLoading, error } = useGet<User[]>(
-        API.DEMO.USERS,
-        undefined,
-        {
-            select: (data) => data.slice(0, 5), // Show first 5 users
-        }
-    );
+    const { data: users, isLoading, error } = useFetchData<User[]>({
+        url: API.demo.users,
+        queryOptions: {
+            select: (data: any) => data.slice(0, 5), // Show first 5 users
+        },
+    });
 
     return (
         <div className="approach-content">
@@ -172,11 +164,13 @@ function UserList() {
   // 40+ lines of boilerplate!
 }`;
 
-    const tanStackCode = `// ✅ TanStack Query Approach
+    const tanStackCode = `// ✅ TanStack Query Approach with Custom Hook
 function UserList() {
-  const { data: users, isLoading, error } = useGet('/api/users');
+  const { data: users, isLoading, error } = useFetchData({
+    url: '/api/users'
+  });
 
-  // That's it! Only 1 line!
+  // That's it! Only 3 lines!
   // Automatic caching, refetching, error handling, etc.
 }`;
 
@@ -224,7 +218,7 @@ function UserList() {
                             <CodeBlock code={useEffectCode} language="typescript" />
                         </div>
                         <div className="code-column">
-                            <h3>✅ TanStack Query (1 line)</h3>
+                            <h3>✅ TanStack Query (3 lines)</h3>
                             <CodeBlock code={tanStackCode} language="typescript" />
                         </div>
                     </div>

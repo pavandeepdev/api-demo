@@ -21,7 +21,7 @@ export function InterceptorDemo() {
 
         try {
             console.log('👆 User clicked button - making API call...');
-            const { data } = await axiosDemo.get(API.DEMO.USERS);
+            const { data } = await axiosDemo.get(API.demo.posts);
             setResponse({ success: true, data: data.slice(0, 3) }); // Show first 3 users
         } catch (error: any) {
             setResponse({ success: false, error: error.message });
