@@ -322,7 +322,7 @@ function UserManagement() {
 
                     <div className="feature-grid">
                         <div className="feature-card">
-                            <h3>🔔 Toast Notifications</h3>
+                            <h3>🔔 Toast Notification</h3>
                             <p>All hooks integrate with Sonner for beautiful toast notifications:</p>
                             <ul>
                                 <li>Success toasts on successful operations</li>
