@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CodeBlock } from '@/components/CodeBlock';
-import { useGet } from '@/hooks/demo/useGet';
-import { usePost } from '@/hooks/demo/usePost';
-import { usePut } from '@/hooks/demo/usePut';
-import { useDelete } from '@/hooks/demo/useDelete';
+import useFetchData from '@/hooks/use-fetch-data';
+import usePostData from '@/hooks/use-post-data';
+import usePutData from '@/hooks/use-put-data';
+import useDeleteData from '@/hooks/use-delete-data';
 import API from '@/config/api/api';
 
 /**
  * CustomHooksDemo Page
  * 
- * Interactive demonstration of all four custom hooks:
- * useGet, usePost, usePut, useDelete
+ * Interactive demonstration of all custom hooks:
+ * useFetchData, usePostData, usePutData, usePatchData, useDeleteData
  */
 
 interface Post {
@@ -26,50 +26,49 @@ export function CustomHooksDemo() {
     const [editMode, setEditMode] = useState(false);
 
     // ============================================
-    // useGet - Fetch posts
+    // useFetchData - Fetch posts
     // ============================================
-    const { data: posts, isLoading, error, refetch } = useGet<Post[]>(
-        API.DEMO.POSTS,
-        { _limit: 5 } // Get only 5 posts for demo
-    );
+    const { data: posts, isLoading, error, refetch } = useFetchData<Post[]>({
+        url: API.demo.posts,
+        params: { _limit: 5 }, // Get only 5 posts for demo
+    });
 
     // ============================================
-    // usePost - Create new post
+    // usePostData - Create new post
     // ============================================
-    const createPost = usePost<Post, Partial<Post>>(API.DEMO.POSTS, {
-        invalidateQueries: [API.DEMO.POSTS],
+    const createPost = usePostData<Post, Partial<Post>>({
+        url: API.demo.posts,
+        refetchQueries: [API.demo.posts],
+        isShowSuccessMessage: true,
         onSuccess: (data) => {
             console.log('✅ Post created:', data);
-            alert('Post created successfully!');
+            refetch();
         },
     });
 
     // ============================================
-    // usePut - Update post
+    // usePutData - Update post
     // ============================================
-    const updatePost = usePut<Post, Partial<Post>>(
-        selectedPost ? API.DEMO.POST_BY_ID(selectedPost.id) : '',
-        {
-            invalidateQueries: [API.DEMO.POSTS],
-            method: 'PATCH',
-            onSuccess: (data) => {
-                console.log('✅ Post updated:', data);
-                alert('Post updated successfully!');
-                setEditMode(false);
-                setSelectedPost(null);
-            },
-        }
-    );
+    const updatePost = usePutData<Post, { id: string; payload: Partial<Post> }>({
+        url: API.demo.posts,
+        refetchQueries: [API.demo.posts],
+        isShowMessage: true,
+        onSuccess: () => {
+            setEditMode(false);
+            setSelectedPost(null);
+            refetch();
+        },
+    });
 
     // ============================================
-    // useDelete - Delete post
+    // useDeleteData - Delete post
     // ============================================
-    const deletePost = useDelete<void>(API.DEMO.POSTS, {
-        invalidateQueries: [API.DEMO.POSTS],
-        confirmMessage: 'Are you sure you want to delete this post?',
+    const deletePost = useDeleteData<void>({
+        url: API.demo.posts,
+        refetchQueries: [API.demo.posts],
         onSuccess: () => {
             console.log('✅ Post deleted');
-            alert('Post deleted successfully!');
+            refetch();
         },
     });
 
@@ -102,30 +101,38 @@ export function CustomHooksDemo() {
 
         if (title && body) {
             updatePost.mutate({
-                title,
-                body,
+                id: selectedPost.id.toString(),
+                payload: {
+                    title,
+                    body,
+                },
             });
         }
     };
 
-    const handleDelete = (id: number) => {
-        deletePost.mutate(id.toString());
+    // @ts-ignore
+    const handleDelete = (id: string) => {
+        if (window.confirm('Are you sure you want to delete this post?')) {
+            deletePost.mutate();
+        }
     };
 
     // ============================================
     // Code Examples
     // ============================================
-    const useGetCode = `// 🎣 useGet Hook - Fetch data with caching
-const { data: posts, isLoading, error } = useGet<Post[]>(
-  '/posts',
-  { _limit: 5 }
-);
+    const useFetchCode = `// 🎣 useFetchData Hook - Fetch data with caching
+const { data: posts, isLoading, error } = useFetchData<Post[]>({
+  url: '/api/posts',
+  params: { _limit: 5 }
+});
 
 // Automatic caching, refetching, error handling!`;
 
-    const usePostCode = `// 🎣 usePost Hook - Create data
-const createPost = usePost<Post, CreatePostDto>('/posts', {
-  invalidateQueries: ['posts'], // Refetch posts after creation
+    const usePostCode = `// 🎣 usePostData Hook - Create data
+const createPost = usePostData<Post, CreatePostDto>({
+  url: '/api/posts',
+  refetchQueries: ['/api/posts'], // Refetch posts after creation
+  isShowSuccessMessage: true,
   onSuccess: (data) => {
     console.log('Created:', data);
   },
@@ -134,29 +141,33 @@ const createPost = usePost<Post, CreatePostDto>('/posts', {
 // Usage
 createPost.mutate({ title: 'New Post', body: 'Content' });`;
 
-    const usePutCode = `// 🎣 usePut Hook - Update data with optimistic updates
-const updatePost = usePut<Post, UpdatePostDto>('/posts/1', {
-  invalidateQueries: ['posts'],
-  method: 'PATCH',
+    const usePutCode = `// 🎣 usePutData Hook - Update data
+const updatePost = usePutData<Post, { id: string; payload: UpdatePostDto }>({
+  url: '/api/posts',
+  refetchQueries: ['/api/posts'],
+  isShowMessage: true,
   onSuccess: (data) => {
     console.log('Updated:', data);
   },
 });
 
 // Usage
-updatePost.mutate({ title: 'Updated Title' });`;
+updatePost.mutate({ 
+  id: '123', 
+  payload: { title: 'Updated Title' } 
+});`;
 
-    const useDeleteCode = `// 🎣 useDelete Hook - Delete data with confirmation
-const deletePost = useDelete('/posts', {
-  invalidateQueries: ['posts'],
-  confirmMessage: 'Are you sure?',
+    const useDeleteCode = `// 🎣 useDeleteData Hook - Delete data
+const deletePost = useDeleteData({
+  url: '/api/posts/123',
+  refetchQueries: ['/api/posts'],
   onSuccess: () => {
     console.log('Deleted successfully');
   },
 });
 
 // Usage
-deletePost.mutate('123'); // Delete post with ID 123`;
+deletePost.mutate(); // Delete post`;
 
     return (
         <div className="demo-page">
@@ -182,11 +193,11 @@ deletePost.mutate('123'); // Delete post with ID 123`;
                 </section>
 
                 <section className="hooks-overview">
-                    <h2>📚 The Four Hooks</h2>
+                    <h2>📚 The Custom Hooks</h2>
 
                     <div className="hook-card">
-                        <h3>1️⃣ useGet - Fetch Data</h3>
-                        <CodeBlock code={useGetCode} language="typescript" />
+                        <h3>1️⃣ useFetchData - Fetch Data</h3>
+                        <CodeBlock code={useFetchCode} language="typescript" />
                         <p className="hook-description">
                             Fetches data with automatic caching, loading states, and error handling.
                             Perfect for GET requests.
@@ -194,7 +205,7 @@ deletePost.mutate('123'); // Delete post with ID 123`;
                     </div>
 
                     <div className="hook-card">
-                        <h3>2️⃣ usePost - Create Data</h3>
+                        <h3>2️⃣ usePostData - Create Data</h3>
                         <CodeBlock code={usePostCode} language="typescript" />
                         <p className="hook-description">
                             Creates new resources with automatic cache invalidation.
@@ -203,7 +214,7 @@ deletePost.mutate('123'); // Delete post with ID 123`;
                     </div>
 
                     <div className="hook-card">
-                        <h3>3️⃣ usePut - Update Data</h3>
+                        <h3>3️⃣ usePutData - Update Data</h3>
                         <CodeBlock code={usePutCode} language="typescript" />
                         <p className="hook-description">
                             Updates resources with optimistic updates and automatic rollback on error.
@@ -212,7 +223,7 @@ deletePost.mutate('123'); // Delete post with ID 123`;
                     </div>
 
                     <div className="hook-card">
-                        <h3>4️⃣ useDelete - Delete Data</h3>
+                        <h3>4️⃣ useDeleteData - Delete Data</h3>
                         <CodeBlock code={useDeleteCode} language="typescript" />
                         <p className="hook-description">
                             Deletes resources with confirmation dialogs and optimistic removal.
@@ -263,7 +274,7 @@ deletePost.mutate('123'); // Delete post with ID 123`;
                                             ✏️ Edit
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(post.id)}
+                                            onClick={() => handleDelete(post.id.toString())}
                                             disabled={deletePost.isPending}
                                             className="action-button delete"
                                         >
@@ -314,7 +325,7 @@ deletePost.mutate('123'); // Delete post with ID 123`;
                         <div className="flow-layer">
                             <div className="flow-box hook">
                                 <strong>Custom Hook</strong>
-                                <p>useGet / usePost / usePut / useDelete</p>
+                                <p>useFetchData / usePostData / usePutData / useDeleteData</p>
                             </div>
                         </div>
                         <div className="flow-arrow-down">↓</div>
@@ -354,12 +365,12 @@ deletePost.mutate('123'); // Delete post with ID 123`;
                         <div className="tip-card">
                             <h4>🔑 Query Keys</h4>
                             <p>Use consistent query keys for proper caching</p>
-                            <code>queryKey: ['posts', {'{ id }'}</code>
+                            <code>queryKey: ['posts', {'{ id }'}]</code>
                         </div>
                         <div className="tip-card">
                             <h4>🔄 Invalidation</h4>
                             <p>Invalidate queries after mutations to refetch fresh data</p>
-                            <code>invalidateQueries: ['posts']</code>
+                            <code>refetchQueries: ['posts']</code>
                         </div>
                         <div className="tip-card">
                             <h4>⚡ Optimistic Updates</h4>
@@ -369,7 +380,7 @@ deletePost.mutate('123'); // Delete post with ID 123`;
                         <div className="tip-card">
                             <h4>🎯 Type Safety</h4>
                             <p>Use TypeScript generics for type inference</p>
-                            <code>useGet{'<User[]>'}('/users')</code>
+                            <code>useFetchData{'<User[]>'}({'{ url: "/users" }'})</code>
                         </div>
                     </div>
                 </section>
