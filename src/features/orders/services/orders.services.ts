@@ -33,7 +33,7 @@ export const useCreateOrder = () => {
     return usePostData<Order, Partial<Order>>({
         url: API.order.create,
         refetchQueries: [API.order.list],
-        isShowSuccessMessage: true,
+        isShowSuccessMessage: true
     });
 };
 
@@ -42,7 +42,7 @@ export const useUpdateOrder = () => {
     return usePutData<Order, { id: string; payload: Partial<Order> }>({
         url: API.order.list,
         refetchQueries: [API.order.list],
-        isShowMessage: true,
+        isSuccessShowMessage: true,
     });
 };
 

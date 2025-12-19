@@ -61,7 +61,7 @@ const handleSubmit = (formData: CreateUserDto) => {
 const updateUser = usePutData<User, UpdateUserDto>({
   url: '/users/123',
   refetchQueries: ['users', 'user-123'],
-  isShowMessage: true,
+  isSuccessShowMessage: true,
   onSuccess: (data) => {
     console.log('Updated:', data);
   }
@@ -87,7 +87,7 @@ updateUserDynamic.mutate({
 const patchUser = usePatchData<User, Partial<User>>({
   url: '/users/123',
   refetchQueries: ['users'],
-  isShowMessage: true,
+  isSuccessShowMessage: true,
   headers: {
     'X-Custom-Header': 'value'
   }
@@ -144,7 +144,7 @@ function UserManagement() {
   const updateUser = usePutData<User, { id: string; payload: UpdateUserDto }>({
     url: '/users',
     refetchQueries: ['users'],
-    isShowMessage: true
+    isSuccessShowMessage: true
   });
 
   // Delete user
@@ -268,7 +268,8 @@ function UserManagement() {
                             <ul>
                                 <li><strong>Flexible URL construction</strong> - Pass id + payload or just payload</li>
                                 <li><strong>Status code handling</strong> - Special handling for 400, 401</li>
-                                <li><strong>isShowMessage</strong> - Control toast visibility (default: true)</li>
+                                <li><strong>isShowSuccessMessage</strong> - Toggle success toast (default: true)</li>
+                                <li><strong>isShowErrorToast</strong> - Toggle error toast (default: true)</li>
                                 <li><strong>Enhanced error objects</strong> - Includes statusCode in error</li>
                             </ul>
                         </div>
@@ -326,7 +327,7 @@ function UserManagement() {
                             <ul>
                                 <li>Success toasts on successful operations</li>
                                 <li>Error toasts with detailed error messages</li>
-                                <li>Configurable via <code>isShowMessage</code> flags</li>
+                                <li>Configurable via <code>isShowSuccessMessage</code> and <code>isShowErrorMessage</code> flags</li>
                             </ul>
                         </div>
 
@@ -467,7 +468,7 @@ function UserManagement() {
 
                         <div className="tip-card">
                             <h4>5. Control Toast Visibility</h4>
-                            <code>isShowMessage: false</code>
+                            <code>isSuccessShowMessage: false</code>
                             <p>Disable toasts for background operations</p>
                         </div>
 

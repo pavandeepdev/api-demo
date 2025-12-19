@@ -52,7 +52,7 @@ export function CustomHooksDemo() {
     const updatePost = usePutData<Post, { id: string; payload: Partial<Post> }>({
         url: API.demo.posts,
         refetchQueries: [API.demo.posts],
-        isShowMessage: true,
+        isSuccessShowMessage: true,
         onSuccess: () => {
             setEditMode(false);
             setSelectedPost(null);
@@ -145,7 +145,7 @@ createPost.mutate({ title: 'New Post', body: 'Content' });`;
 const updatePost = usePutData<Post, { id: string; payload: UpdatePostDto }>({
   url: '/api/posts',
   refetchQueries: ['/api/posts'],
-  isShowMessage: true,
+  isSuccessShowMessage: true,
   onSuccess: (data) => {
     console.log('Updated:', data);
   },

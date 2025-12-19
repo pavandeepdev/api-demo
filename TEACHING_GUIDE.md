@@ -1060,7 +1060,7 @@ export const API = {
 
 #### `src/hooks/api/index.ts`
 ```typescript
-export { useGet } from './useGet';
+// export { useGet } from './useGet';
 export { usePost } from './usePost';
 export { usePut } from './usePut';
 export { useDelete } from './useDelete';

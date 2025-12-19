@@ -13,7 +13,7 @@ interface PutDataOptions<TData, TVariables> {
   onSuccess?: (data: TData) => void;
   onError?: (error: Error) => void;
   mutationOptions?: UseMutationOptions<TData, Error, TVariables>;
-  isShowMessage?: boolean;
+  isSuccessShowMessage?: boolean;
 }
 
 const usePutData = <TData = unknown, TVariables = unknown>({
@@ -23,7 +23,7 @@ const usePutData = <TData = unknown, TVariables = unknown>({
   mutationOptions,
   onSuccess,
   onError,
-  isShowMessage = true,
+  isSuccessShowMessage = true,
 }: PutDataOptions<TData, TVariables>) => {
   const queryClient = useQueryClient();
 
@@ -52,7 +52,7 @@ const usePutData = <TData = unknown, TVariables = unknown>({
       });
 
       if (response?.statusCode === 200 || response?.statusCode === 201) {
-        if (isShowMessage)
+        if (isSuccessShowMessage)
           toast.success(response.message ?? 'Data updated successfully');
         return response.data as TData;
       }
